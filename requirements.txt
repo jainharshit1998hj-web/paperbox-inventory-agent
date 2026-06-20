@@ -1,0 +1,6 @@
+flask
+gspread
+groq
+huggingface_hub
+openai
+gunicorn
