@@ -35,13 +35,7 @@ print("✅ Live data loaded from Google Sheets!")
 # ─── API CLIENT SETUP ─────────────────────────────────────────────────────────
 def setup_client():
     api = os.environ.get("ACTIVE_API", "groq")
-    if api == "anthropic":
-        import anthropic
-        return anthropic.Anthropic(api_key=os.environ.get("ANTHROPIC_API_KEY"))
-    elif api == "gemini":
-        from google import genai
-        return genai.Client(api_key=os.environ.get("GOOGLE_API_KEY"))
-    elif api == "groq":
+    if api == "groq":
         from groq import Groq
         return Groq(api_key=os.environ.get("GROQ_API_KEY"))
     elif api == "huggingface":
@@ -50,30 +44,22 @@ def setup_client():
             model="Qwen/Qwen2.5-7B-Instruct",
             token=os.environ.get("HF_API_TOKEN")
         )
+    elif api == "openrouter":
+        from openai import OpenAI
+        return OpenAI(
+            api_key=os.environ.get("OPENROUTER_API_KEY"),
+            base_url="https://openrouter.ai/api/v1"
+        )
     else:
-        raise ValueError(f"Unknown API: '{api}'. Choose: anthropic, gemini, groq, huggingface")
+        raise ValueError(f"Unknown API: '{api}'. Choose: groq, huggingface, openrouter")
 
 client = setup_client()
 print(f"✅ Connected to: {os.environ.get('ACTIVE_API', 'groq').upper()}")
-
+    
 # ─── CHAT FUNCTION ────────────────────────────────────────────────────────────
-def chat(system_prompt, user_message, max_tokens=500):
+def chat(system_prompt, user_message, max_tokens=300):
     api = os.environ.get("ACTIVE_API", "groq")
-    if api == "anthropic":
-        r = client.messages.create(
-            model="claude-haiku-4-5-20251001",
-            max_tokens=max_tokens,
-            system=system_prompt,
-            messages=[{"role": "user", "content": user_message}]
-        )
-        return r.content[0].text
-    elif api == "gemini":
-        r = client.models.generate_content(
-            model="gemini-2.0-flash",
-            contents=system_prompt + "\n\n" + user_message
-        )
-        return r.text
-    elif api == "groq":
+    if api == "groq":
         r = client.chat.completions.create(
             model="llama-3.3-70b-versatile",
             max_tokens=max_tokens,
@@ -92,7 +78,17 @@ def chat(system_prompt, user_message, max_tokens=500):
             max_tokens=max_tokens
         )
         return r.choices[0].message.content
-
+    elif api == "openrouter":
+        r = client.chat.completions.create(
+            model="meta-llama/llama-3.3-70b-instruct:free",
+            max_tokens=max_tokens,
+            messages=[
+                {"role": "system", "content": system_prompt},
+                {"role": "user",   "content": user_message}
+            ]
+        )
+        return r.choices[0].message.content
+    
 # ─── BUSINESS LOGIC TOOLS ─────────────────────────────────────────────────────
 
 def get_current_stock():

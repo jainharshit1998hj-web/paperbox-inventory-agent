@@ -265,8 +265,7 @@ HTML_PAGE = """
         <select id="apiSelect" onchange="switchAPI()">
             <option value="groq">Groq</option>
             <option value="huggingface">HuggingFace</option>
-            <option value="gemini">Gemini</option>
-            <option value="anthropic">Anthropic</option>
+            <option value="openrouter">OpenRouter</option>
         </select>
         <span id="apiStatus"></span>
     </div>
@@ -385,7 +384,7 @@ def switch_api():
     global client
     new_api = request.json.get("api", "").strip().lower()
 
-    valid_apis = ["groq", "anthropic", "gemini", "huggingface"]
+    valid_apis = ["groq", "huggingface", "openrouter"]
     if new_api not in valid_apis:
         return jsonify({"success": False, "error": "Invalid API name"})
 
