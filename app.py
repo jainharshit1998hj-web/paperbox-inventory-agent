@@ -7,7 +7,7 @@
 import os
 
 # Set your default API before loading the agent
-os.environ["ACTIVE_API"] = "huggingface"
+os.environ["ACTIVE_API"] = "groq"
 
 from flask import Flask, render_template_string, request, jsonify
 from datetime import date
