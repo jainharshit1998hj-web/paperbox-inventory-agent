@@ -16,8 +16,8 @@ import json
 # ── LOAD THE AGENT (reuses everything from inventory_agent.py) ───────
 import os as _os
 _script_dir = _os.path.dirname(_os.path.abspath(__file__))
-_os.chdir(_os.path.join(_script_dir, ".."))  # go up to ~/myenv
-exec(open("inventory_agent/inventory_agent.py").read())
+_os.chdir(_script_dir)  # stay in same folder as app.py
+exec(open(_os.path.join(_script_dir, "inventory_agent.py")).read())
 
 app = Flask(__name__)
 

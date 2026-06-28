@@ -3,20 +3,30 @@ import math
 import os
 import gspread
 
-# ─── LOAD .env ────────────────────────────────────────────────────────────────
-with open("inventory_agent/.env", "r") as f:
-    for line in f:
-        line = line.strip()
-        if "=" in line and not line.startswith("#"):
-            key, value = line.split("=", 1)
-            # Only set if not already set by Cell 3
-            if key not in os.environ:
-                os.environ[key] = value.strip('"')
+# ─── LOAD .env (local only) ───────────────────────────────────────────────────
+if os.path.exists("inventory_agent/.env"):
+    with open("inventory_agent/.env", "r") as f:
+        for line in f:
+            line = line.strip()
+            if "=" in line and not line.startswith("#"):
+                key, value = line.split("=", 1)
+                if key not in os.environ:
+                    os.environ[key] = value.strip('"')
 
 # ─── GOOGLE SHEETS CONNECTION ─────────────────────────────────────────────────
 SHEET_ID = "1QuvXFYZ0cGXm5NQNYI0y6p6TV5bqYcPSTmhe03laTiI"
 
-gc     = gspread.service_account(filename="inventory_agent/credentials.json")
+creds_json = os.environ.get("GOOGLE_CREDENTIALS_JSON")
+if creds_json:
+    import json
+    from google.oauth2.service_account import Credentials
+    SCOPES = ["https://www.googleapis.com/auth/spreadsheets",
+              "https://www.googleapis.com/auth/drive"]
+    creds = Credentials.from_service_account_info(json.loads(creds_json), scopes=SCOPES)
+    gc = gspread.authorize(creds)
+else:
+    gc = gspread.service_account(filename="inventory_agent/credentials.json")
+    
 gsheet = gc.open_by_key(SHEET_ID)
 
 def load_sheet(tab_name):
