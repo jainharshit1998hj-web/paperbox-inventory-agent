@@ -10,7 +10,7 @@ import os
 os.environ["ACTIVE_API"] = "groq"
 
 from flask import Flask, render_template_string, request, jsonify
-from datetime import date
+from datetime import date as _date, datetime as _datetime
 import json
 
 # ── LOAD THE AGENT (reuses everything from inventory_agent.py) ───────
@@ -22,7 +22,6 @@ exec(open(_os.path.join(_script_dir, "inventory_agent.py")).read())
 app = Flask(__name__)
 
 # ── UPDATE AGENT (natural language updates, from Cell 7) ──────────────
-from datetime import date as _date
 
 def update_agent(instruction):
     today = str(_date.today().strftime("%d-%b-%Y"))
@@ -121,7 +120,8 @@ Instruction: {instruction}
             data.get("due_date", ""),
             data.get("priority", "Normal"),
             "Received",
-            data.get("notes", "")
+            _datetime.now().strftime("%d-%b-%Y %H:%M:%S"),
+            data.get("notes", "") 
         ])
 
         stages_tab = gsheet.worksheet("Order Stages")
@@ -146,9 +146,10 @@ Instruction: {instruction}
             data.get("stage", ""),
             data.get("stage_date", today),
             data.get("done_by", "Manager"),
+            _datetime.now().strftime("%d-%b-%Y %H:%M:%S"),
             data.get("notes", "")
         ])
-
+        
         orders_tab = gsheet.worksheet("Orders")
         all_rows = orders_tab.get_all_values()
         for i, row in enumerate(all_rows):
@@ -170,8 +171,10 @@ Instruction: {instruction}
             data.get("used_qty", 0),
             data.get("closing_qty", 0),
             data.get("unit", ""),
+            _datetime.now().strftime("%d-%b-%Y %H:%M:%S"),
             data.get("notes", "")
         ])
+        
         summary = (
             f"✅ Stock updated: {data.get('item_name')} "
             f"{data.get('size', '')}"
@@ -189,8 +192,10 @@ Instruction: {instruction}
             data.get("total_cost", 0),
             data.get("supplier", ""),
             data.get("invoice_no", "-"),
+            _datetime.now().strftime("%d-%b-%Y %H:%M:%S"),
             data.get("notes", "")
         ])
+
         summary = (
             f"✅ Purchase recorded: {data.get('qty')} x "
             f"{data.get('item_name')} from {data.get('supplier')}"
